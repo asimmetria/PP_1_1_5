@@ -1,6 +1,5 @@
 package jm.task.core.jdbc.dao;
 
-import com.sun.xml.bind.v2.model.core.ID;
 import jm.task.core.jdbc.model.User;
 import jm.task.core.jdbc.util.Util;
 
@@ -23,7 +22,7 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
                 + "(id BIGINT PRIMARY KEY AUTO_INCREMENT, " +
                 "name VARCHAR(255), " +
                 "lastName VARCHAR(255), " +
-                "age INT);";
+                "age TINYINT);";
 
         try (Connection connection = getConnection(); Statement st = connection.createStatement()) {
             st.executeUpdate(sql);
@@ -37,31 +36,53 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
         String sql = "DROP TABLE " + TABLE_NAME;
 
         try (Connection connection = getConnection(); Statement st = connection.createStatement()) {
-            st.execute(sql);
+            st.executeUpdate(sql);
         } catch (SQLException e) {
             //    throw new RuntimeException(e);
         }
     }
 
-    public void saveUser(String name, String lastName, byte age) {
+    /*  Если я правильно понял:
+        "в дао слое требуется реализовать логику транзакций на методах, которые изменяют бд" -
+        это значит , что нужно отключать автокоммит перед попыткой запросОВ , коммитить вручную после запросОВ и
+        в кэтче делать роллБэк , если при исполнению запросов выскочило исключение.
+
+        Отключение автокоммита и коммите врунчнею не делал , потому что запрос в каждом методе ОДИН и значит нет смысла
+        выключать/включать коммит , поскольку эти действия реализованы по умолчанию в JDBC
+
+     */
+
+    public void saveUser(String name, String lastName, byte age) {                                            // !!!
         String sql = "INSERT INTO " + TABLE_NAME + " (name, lastName, age) VALUES (?, ?, ?)";
 
         try (Connection connection = getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, name);
             ps.setString(2, lastName);
             ps.setByte(3, age);
-            ps.execute();
+            ps.executeUpdate();
             System.out.println("User c именем " + name + " " + lastName + " добавлен в базу данных");
         } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
             throw new RuntimeException(e);
         }
     }
 
-    public void removeUserById(long id) {
+    public void removeUserById(long id) {                                                               // !!!
         String sql= "DELETE FROM " + TABLE_NAME + " WHERE ID = " + id +";";
         try (Connection connection = getConnection(); Statement st = connection.createStatement()) {
+
             st.executeUpdate(sql);
+
         } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
             throw new RuntimeException(e);
         }
     }
@@ -90,13 +111,20 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
         return list;
     }
 
-    public void cleanUsersTable() {
+    public void cleanUsersTable() {             // !!!
         String sql = "TRUNCATE TABLE " + TABLE_NAME;
 
         try (Connection connection = getConnection(); Statement st = connection.createStatement()) {
+
             st.executeUpdate(sql);
+
         } catch (SQLException e) {
-               throw new RuntimeException(e);
+            try {
+                connection.rollback();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+            throw new RuntimeException(e);
         }
     }
 }

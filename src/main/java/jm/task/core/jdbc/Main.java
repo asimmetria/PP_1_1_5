@@ -1,14 +1,8 @@
 package jm.task.core.jdbc;
 
 import jm.task.core.jdbc.model.User;
+import jm.task.core.jdbc.service.UserService;
 import jm.task.core.jdbc.service.UserServiceImpl;
-import jm.task.core.jdbc.util.Util;
-
-import javax.crypto.spec.PSource;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 
 public class Main {
     public static void main(String[] args)   {
@@ -17,7 +11,7 @@ public class Main {
         User user3 = new User("Maxim","Melehin", (byte) 32);
         User user4 = new User("Kristina","Altunina", (byte) 38);
 
-        UserServiceImpl userService = new UserServiceImpl();
+        UserService userService = new UserServiceImpl();
 
         userService.createUsersTable();
 
