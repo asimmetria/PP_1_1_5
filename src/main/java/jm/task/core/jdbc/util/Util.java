@@ -11,6 +11,7 @@ Util {
     public static final String URL = "jdbc:mysql://localhost:3306/mysql";
     public static final String TABLE_NAME ="abc";
 
+
     public Connection getConnection(){
         Connection connection = null;
         try {
