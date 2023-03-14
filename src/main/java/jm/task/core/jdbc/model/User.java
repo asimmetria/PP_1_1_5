@@ -5,10 +5,8 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import static jm.task.core.jdbc.util.Util.TABLE_NAME;
-
 @Entity
-@Table (name=TABLE_NAME)
+@Table (name="users")
 public class User {
     @Id
     @Column(name = "id")
@@ -67,11 +65,9 @@ public class User {
 
     @Override
     public String toString() {
-        return "User{" +
-                "id=" + id +
+        return  "id=" + id +
                 ", name='" + name + '\'' +
                 ", lastName='" + lastName + '\'' +
-                ", age=" + age +
-                '}';
+                ", age=" + age;
     }
 }

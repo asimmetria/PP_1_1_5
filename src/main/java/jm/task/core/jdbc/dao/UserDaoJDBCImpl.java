@@ -8,38 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserDaoJDBCImpl extends Util implements UserDao {
-
-//-------------------------------------------------------------------------------
-    private void myRollback(Connection connection) {
-        try {
-            connection.rollback();
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    private void myExecuteUpdate(String sql){
-        try (Connection connection = getConnection()) {
-            try (Statement st = connection.createStatement()) {
-                st.executeUpdate(sql);
-            } catch (SQLException e) {
-                myRollback(connection);
-                throw new RuntimeException(e);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    private void myExecuteUpdateIgnoredSQLEx(String sql) {
-        try (Connection connection = getConnection(); Statement st = connection.createStatement()) {
-            st.executeUpdate(sql);
-        } catch (SQLException ignored) {
-
-        }
-
-    }
-//-------------------------------------------------------------------------------
-
     public UserDaoJDBCImpl() {
 
     }
@@ -48,7 +16,7 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
 
     public void createUsersTable() {
         myExecuteUpdateIgnoredSQLEx("CREATE TABLE "
-                + TABLE_NAME
+                + "users"
                 + "(id BIGINT PRIMARY KEY AUTO_INCREMENT, " +
                 "name VARCHAR(255), " +
                 "lastName VARCHAR(255), " +
@@ -56,22 +24,11 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
     }
 
     public void dropUsersTable() {
-        myExecuteUpdateIgnoredSQLEx("DROP TABLE " + TABLE_NAME);
+        myExecuteUpdateIgnoredSQLEx("DROP TABLE " + "users");
     }
 
-
-    /*  Если я правильно понял:
-        "в дао слое требуется реализовать логику транзакций на методах, которые изменяют бд" -
-        это значит , что нужно отключать автокоммит перед попыткой запросОВ , коммитить вручную после запросОВ и
-        в кэтче делать роллБэк , если при исполнению запросов выскочило исключение.
-
-        Отключение автокоммита и коммите врунчнею не делал , потому что запрос в каждом методе ОДИН и значит нет смысла
-        выключать/включать коммит , поскольку эти действия реализованы по умолчанию в JDBC
-
-     */
-
     public void saveUser(String name, String lastName, byte age) {               // with rollBack
-        String sql = "INSERT INTO " + TABLE_NAME + " (name, lastName, age) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO " + "users" + " (name, lastName, age) VALUES (?, ?, ?)";
 
         try (Connection connection = getConnection()) {
             try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -91,15 +48,15 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
     }
 
     public void removeUserById(long id) {        // with rollBack
-        myExecuteUpdate("DELETE FROM " + TABLE_NAME + " WHERE ID = " + id + ";");
+        myExecuteUpdate("DELETE FROM " + "users" + " WHERE ID = " + id + ";");
     }
 
     public void cleanUsersTable() {             // with rollBack
-        myExecuteUpdate("TRUNCATE TABLE " + TABLE_NAME);
+        myExecuteUpdate("TRUNCATE TABLE " + "users");
     }
 
     public List<User> getAllUsers() {
-        String sql = "SELECT * FROM " + TABLE_NAME;
+        String sql = "SELECT * FROM " + "users";
         List<User> list = new ArrayList<>();
 
 
@@ -122,4 +79,37 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
 
         return list;
     }
+
+    //-------------------------------------------------------------------------------
+    private void myRollback(Connection connection) {
+        try {
+            connection.rollback();
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private void myExecuteUpdate(String sql) {
+        try (Connection connection = getConnection()) {
+            try (Statement st = connection.createStatement()) {
+                st.executeUpdate(sql);
+            } catch (SQLException e) {
+                myRollback(connection);
+                throw new RuntimeException(e);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void myExecuteUpdateIgnoredSQLEx(String sql) {
+        try (Connection connection = getConnection(); Statement st = connection.createStatement()) {
+            st.executeUpdate(sql);
+        } catch (SQLException ignored) {
+
+        }
+
+    }
+//-------------------------------------------------------------------------------
+
 }
