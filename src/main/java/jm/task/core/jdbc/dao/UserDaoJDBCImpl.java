@@ -9,13 +9,10 @@ import java.util.List;
 
 public class UserDaoJDBCImpl extends Util implements UserDao {
     public UserDaoJDBCImpl() {
-
     }
 
-    //  Connection connection = getConnection();
-
     public void createUsersTable() {
-        myExecuteUpdateIgnoredSQLEx("CREATE TABLE "
+        myExecuteUpdate("CREATE TABLE IF NOT EXISTS "
                 + "users"
                 + "(id BIGINT PRIMARY KEY AUTO_INCREMENT, " +
                 "name VARCHAR(255), " +
@@ -24,10 +21,10 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
     }
 
     public void dropUsersTable() {
-        myExecuteUpdateIgnoredSQLEx("DROP TABLE " + "users");
+        myExecuteUpdate("DROP TABLE IF EXISTS " + "users");
     }
 
-    public void saveUser(String name, String lastName, byte age) {               // with rollBack
+    public void saveUser(String name, String lastName, byte age) {
         String sql = "INSERT INTO " + "users" + " (name, lastName, age) VALUES (?, ?, ?)";
 
         try (Connection connection = getConnection()) {
@@ -47,11 +44,11 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
 
     }
 
-    public void removeUserById(long id) {        // with rollBack
+    public void removeUserById(long id) {
         myExecuteUpdate("DELETE FROM " + "users" + " WHERE ID = " + id + ";");
     }
 
-    public void cleanUsersTable() {             // with rollBack
+    public void cleanUsersTable() {
         myExecuteUpdate("TRUNCATE TABLE " + "users");
     }
 
@@ -80,7 +77,6 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
         return list;
     }
 
-    //-------------------------------------------------------------------------------
     private void myRollback(Connection connection) {
         try {
             connection.rollback();
@@ -101,15 +97,4 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
             throw new RuntimeException(e);
         }
     }
-
-    private void myExecuteUpdateIgnoredSQLEx(String sql) {
-        try (Connection connection = getConnection(); Statement st = connection.createStatement()) {
-            st.executeUpdate(sql);
-        } catch (SQLException ignored) {
-
-        }
-
-    }
-//-------------------------------------------------------------------------------
-
 }

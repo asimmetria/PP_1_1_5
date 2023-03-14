@@ -14,7 +14,6 @@ public class Main {
         User user4 = new User("Kristina","Altunina", (byte) 38);
 
         UserService userService = new UserServiceImpl();
-
         userService.createUsersTable();
 
         userService.saveUser(user1.getName(), user1.getLastName(), user1.getAge());
