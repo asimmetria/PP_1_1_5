@@ -14,8 +14,6 @@ public class UserDaoHibernateImpl extends Util implements UserDao {
     public UserDaoHibernateImpl() {
 
     }
-
-
     @Override
     public void createUsersTable() {
         try (Session session = getSessionFactory().openSession()) {
@@ -94,6 +92,9 @@ public class UserDaoHibernateImpl extends Util implements UserDao {
             session.createQuery("DELETE User").executeUpdate();
             transaction.commit();
         } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
             e.printStackTrace();
         }
     }
