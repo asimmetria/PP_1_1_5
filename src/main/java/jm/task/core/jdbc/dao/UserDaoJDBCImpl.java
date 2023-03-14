@@ -47,20 +47,16 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
     //  Connection connection = getConnection();
 
     public void createUsersTable() {
-
-        String sql = "CREATE TABLE "
+        myExecuteUpdateIgnoredSQLEx("CREATE TABLE "
                 + TABLE_NAME
                 + "(id BIGINT PRIMARY KEY AUTO_INCREMENT, " +
                 "name VARCHAR(255), " +
                 "lastName VARCHAR(255), " +
-                "age TINYINT);";
-
-        myExecuteUpdateIgnoredSQLEx(sql);
+                "age TINYINT);");
     }
 
     public void dropUsersTable() {
-        String sql = "DROP TABLE " + TABLE_NAME;
-        myExecuteUpdateIgnoredSQLEx(sql);
+        myExecuteUpdateIgnoredSQLEx("DROP TABLE " + TABLE_NAME);
     }
 
 
@@ -95,13 +91,11 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
     }
 
     public void removeUserById(long id) {        // with rollBack
-        String sql = "DELETE FROM " + TABLE_NAME + " WHERE ID = " + id + ";";
-        myExecuteUpdate(sql);
+        myExecuteUpdate("DELETE FROM " + TABLE_NAME + " WHERE ID = " + id + ";");
     }
 
     public void cleanUsersTable() {             // with rollBack
-        String sql = "TRUNCATE TABLE " + TABLE_NAME;
-        myExecuteUpdate(sql);
+        myExecuteUpdate("TRUNCATE TABLE " + TABLE_NAME);
     }
 
     public List<User> getAllUsers() {
