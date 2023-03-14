@@ -13,7 +13,7 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
 
     }
 
-    Connection connection = getConnection();
+    //  Connection connection = getConnection();
 
     public void createUsersTable() {
 
@@ -24,7 +24,7 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
                 "lastName VARCHAR(255), " +
                 "age TINYINT);";
 
-        try (Statement st = connection.createStatement()) {
+        try (Connection connection = getConnection(); Statement st = connection.createStatement()) {
             st.executeUpdate(sql);
         } catch (SQLException ignored) {
             // throw new RuntimeException(e);
@@ -35,7 +35,7 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
     public void dropUsersTable() {
         String sql = "DROP TABLE " + TABLE_NAME;
 
-        try (Statement st = connection.createStatement()) {
+        try (Connection connection = getConnection(); Statement st = connection.createStatement()) {
             st.executeUpdate(sql);
         } catch (SQLException e) {
             //    throw new RuntimeException(e);
@@ -55,43 +55,53 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
     public void saveUser(String name, String lastName, byte age) {                                            // !!!
         String sql = "INSERT INTO " + TABLE_NAME + " (name, lastName, age) VALUES (?, ?, ?)";
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, name);
-            ps.setString(2, lastName);
-            ps.setByte(3, age);
-            ps.executeUpdate();
-            System.out.println("User c именем " + name + " " + lastName + " добавлен в базу данных");
-        } catch (SQLException e) {
-            try {
-                connection.rollback();
-            } catch (SQLException ex) {
-                throw new RuntimeException(ex);
+        try (Connection connection = getConnection()) {
+            try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                ps.setString(1, name);
+                ps.setString(2, lastName);
+                ps.setByte(3, age);
+                ps.executeUpdate();
+                System.out.println("User c именем " + name + " " + lastName + " добавлен в базу данных");
+            } catch (SQLException e) {
+                try {
+                    connection.rollback();
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+                throw new RuntimeException(e);
             }
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+
     }
 
     public void removeUserById(long id) {                                                               // !!!
         String sql = "DELETE FROM " + TABLE_NAME + " WHERE ID = " + id + ";";
-        try (Statement st = connection.createStatement()) {
 
-            st.executeUpdate(sql);
-
-        } catch (SQLException e) {
-            try {
-                connection.rollback();
-            } catch (SQLException ex) {
-                throw new RuntimeException(ex);
+        try (Connection connection = getConnection()) {
+            try (Statement st = connection.createStatement()) {
+                st.executeUpdate(sql);
+            } catch (SQLException e) {
+                try {
+                    connection.rollback();
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+                throw new RuntimeException(e);
             }
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+
     }
 
     public List<User> getAllUsers() {
         String sql = "SELECT * FROM " + TABLE_NAME;
         List<User> list = new ArrayList<>();
 
-        try (Statement st = connection.createStatement()) {
+
+        try (Connection connection = getConnection(); Statement st = connection.createStatement()) {
             ResultSet resultSet = st.executeQuery(sql);
 
             while (resultSet.next()) {
@@ -114,17 +124,20 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
     public void cleanUsersTable() {             // !!!
         String sql = "TRUNCATE TABLE " + TABLE_NAME;
 
-        try (Statement st = connection.createStatement()) {
-
-            st.executeUpdate(sql);
-
-        } catch (SQLException e) {
-            try {
-                connection.rollback();
-            } catch (SQLException ex) {
-                throw new RuntimeException(ex);
+        try (Connection connection = getConnection()) {
+            try (Statement st = connection.createStatement()) {
+                st.executeUpdate(sql);
+            } catch (SQLException e) {
+                try {
+                    connection.rollback();
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+                throw new RuntimeException(e);
             }
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+
     }
 }
